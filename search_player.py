@@ -11,8 +11,20 @@ class Mode(enum.Enum):
     ERROR = 3
 
 
+def list_directory() -> list[str]:
+    retval = os.listdir()
+    retval.append(".")
+    retval.append("..")
+    
+    for i, file in enumerate(retval):
+        if os.path.isdir(file):
+            retval[i] += "/"
+
+    return retval
+
+
 player: vlc.MediaPlayer = vlc.MediaPlayer()
-current_files = os.listdir()
+current_files = list_directory()
 selection = 0
 font: pygame.font.Font
 screen: pygame.Surface
@@ -20,7 +32,6 @@ filename_buffer = ""
 command_buffer = ""
 starting_point = 0
 font_size = 40
-
 mode = Mode.DIR
 error_message = ""
 
@@ -45,7 +56,7 @@ def parent_dir():
     global selection
 
     os.chdir('../')
-    current_files = os.listdir()
+    current_files = list_directory()
     filename_buffer = ""
     selection = 0
 
@@ -61,7 +72,7 @@ def open_file(index: int):
     next_path = current_files[index]
     if os.path.isdir(next_path):
         os.chdir(next_path)
-        current_files = os.listdir()
+        current_files = list_directory()
         filename_buffer = ""
         selection = 0
     else:
@@ -92,7 +103,7 @@ def render_dir():
     pygame.draw.rect(screen, (225, 30, 30), (0, (selection + 1 + starting_point) * font_size, screen.get_width(), font_size))
     for i, filename in enumerate(current_files):
         if os.path.isdir(filename):
-            render_text(filename + "/", (0, (i + 1 + starting_point) * font_size), color=(255, 255, 0))
+            render_text(filename, (0, (i + 1 + starting_point) * font_size), color=(255, 255, 0))
         else:
             render_text(filename, (0, (i + 1 + starting_point) * font_size))
 
@@ -131,7 +142,7 @@ def exe_cmd(cmd: list[str]):
         case "play" | "s":
             player.play()
         case "pause" | "p":
-            player.pause()
+            player.set_pause(1)
         case _:
             raise Exception(f"There is no command named \"{cmd[0]}\"")
 
@@ -160,7 +171,7 @@ def on_key_down(key: int, mod: int, unicode: str):
                     case pygame.K_s:
                         player.play()
                     case pygame.K_q:
-                        player.pause()
+                        player.set_pause(1)
             else:
                 match key:
                     case pygame.K_ESCAPE:
@@ -232,11 +243,12 @@ def on_mouse_button_down(button: int):
                     else:
                         up()
                 case pygame.BUTTON_MIDDLE:
-                    parent_dir()
-                case pygame.BUTTON_X1:
                     player.pause()
+                case pygame.BUTTON_X1:
+                    parent_dir()
                 case pygame.BUTTON_X2:
-                    player.play()
+                    open_file(selection)
+
 
 
 def main():
@@ -269,7 +281,7 @@ def main():
                 on_mouse_button_down(event.button)
 
         current_files = []
-        for file in os.listdir():
+        for file in list_directory():
             if search_string(file.lower(), filename_buffer.lower()):
                 current_files.append(file)
 
