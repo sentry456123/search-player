@@ -1,0 +1,7 @@
+{
+    "python.linting.pycodestyleEnabled": true,
+    "python.linting.enabled": true,
+    "python.formatting.autopep8Args": [
+        "--in-place --aggressive --aggressive"
+    ]
+}
