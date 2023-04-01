@@ -75,10 +75,10 @@ class DirPanel(IPanel):
                 self._open_selected()
             case pygame.BUTTON_WHEELDOWN:
                 if not ctrl:
-                    self._engine.move_selection(-1)
+                    self._engine.move_selection(1)
             case pygame.BUTTON_WHEELUP:
                 if not ctrl:
-                    self._engine.move_selection(1)
+                    self._engine.move_selection(-1)
             case pygame.BUTTON_MIDDLE:
                 self._engine.buf = ''
             case pygame.BUTTON_X1:
@@ -132,7 +132,7 @@ class DirPanel(IPanel):
             return
         path = self._engine.get_selected()
         if self._is_file(path):
-            self._app.launch_program(os.path.join(self._path, path))
+            os.startfile(os.path.join(self._path, path))
         else:
             self._change_dir(path)
             if erase_buf_on_dir:

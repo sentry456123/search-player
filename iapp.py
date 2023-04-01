@@ -11,9 +11,6 @@ class IApp(ABC):
     def close_panel(self, retval=None): ...
 
     @abstractmethod
-    def launch_program(self, filepath: str): ...
-
-    @abstractmethod
     def display_error(self, msg: str): ...
 
     @abstractmethod

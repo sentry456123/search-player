@@ -3,7 +3,6 @@ import pygame
 from collections import deque
 from panel.ipanel import IPanel
 import subprocess
-from subprocess import Popen
 import config
 from config import Config
 from typing import Optional
@@ -15,13 +14,6 @@ import sys
 import wrapper
 from iapp import IApp
 import numpy as np
-
-
-def _async_exe_shell(cmd: list[str]):
-    Popen(cmd, shell=True,
-          stdin=subprocess.DEVNULL,
-          stdout=subprocess.DEVNULL,
-          stderr=subprocess.DEVNULL)
 
 
 class AppRenderer(IRenderer):
@@ -101,15 +93,6 @@ class App(IApp):
         self._panel_stack.pop()
         if retval is not None:
             self._get_focused_panel().receive(retval)
-
-    def launch_program(self, filepath: str):
-        ext = os.path.splitext(filepath)[1]
-        progname = self._conf.try_get_value(ext)
-        args = [filepath] if progname is None else [progname, filepath]
-        try:
-            _async_exe_shell(args)
-        except Exception as e:
-            self.display_error(f'Failed to launch program: {str(e)}')
 
     def display_error(self, msg: str):
         print(f'ERROR: {msg}', file=sys.stderr)

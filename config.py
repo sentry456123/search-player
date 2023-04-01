@@ -18,39 +18,12 @@ _DEFAULT_VALUE = {
 }
 
 
-def _preprocess(text: str) -> str:
-    lines = text.split('\n')
-    defines = {}
-    new_lines = []
-    for line in lines:
-        for key, value in defines.items():
-            line = line.replace('$' + key, value)
-        parts = line.split()
-        if len(parts) == 0:
-            continue
-        match parts[0]:
-            case '#define':
-                if len(parts) >= 3:
-                    for i in range(len(parts)):
-                        defines[parts[1]] = ' '.join(parts[2:])
-                else:
-                    raise Exception(
-                        'The preprocessor keyword "#define" used, '
-                        'but the argument is wrong')
-                continue
-        new_lines.append(line)
-
-    return '\n'.join(new_lines)
-
-
 class Config:
 
     def load(self):
         self._dict = dict()
         with open(PATH, 'r') as file:
-            parsed_text = _preprocess(file.read())
-
-            for i, line in enumerate(parsed_text.split("\n")):
+            for line in file:
                 words = shlex.split(line)
                 length = len(words)
                 if length > 2:
@@ -68,15 +41,6 @@ class Config:
                         f'path "{PATH}", line {i} "{line}": '
                         f'No key called "{words[0]}" found')
                 self._dict[words[0]] = words[1]
-
-    def save(self):
-        with open(PATH, 'w') as file:
-            for key, value in self._dict.items():
-                if ' ' in key:
-                    key = f'\'{key}\''
-                if ' ' in value:
-                    value = f'\'{value}\''
-                file.write(f'{key} {value}\n')
 
     def try_get_value(self, key: str) -> Optional[str]:
         if key in self._dict:
