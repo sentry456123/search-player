@@ -16,9 +16,9 @@ class ErrorPanel(IPanel):
         pass
 
     def render(self, r: IRenderer):
-        r.fill((30, 30, 30))
+        r.fill(r.background_color())
         width, height = r.panel_size()
-        r.wrapped_text(self._message, (0, 0, width, height), color=irenderer.MODERN_RED)
+        r.wrapped_text(self._message, (0, 0, width, height), irenderer.MODERN_RED)
 
     def receive(self, retval):
         return super().receive(retval)

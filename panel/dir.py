@@ -95,26 +95,34 @@ class DirPanel(IPanel):
         width, height = r.panel_size()
         font_size = r.font_size()
         font = r.font()
+        theme = self._app.get_configvalue(config.Key.THEME)
 
         self._render_offset = 0
         if self._engine.selection >= (height / font_size) / 2:
             self._render_offset = -self._engine.selection + (height / font_size) / 2 - 1
 
-        r.rect((0, (self._engine.selection + self._header_size + self._render_offset) * font_size, width, font_size), irenderer.MODERN_RED)
+        color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
+        r.rect((0, (self._engine.selection + self._header_size + self._render_offset) * font_size, width, font_size), color)
 
         for i, name in enumerate(self._engine.words):
-            color = irenderer.MODERN_YELLOW if name[-1] == '/' else irenderer.WHITE
-            r.text(name, (0, (i + self._header_size + self._render_offset) * font_size), color=color)
+            if name[-1] == '/':
+                color = irenderer.MODERN_YELLOW if theme == 'dark' else irenderer.DARK_YELLOW
+            else:
+                color = r.font_color()
+            r.text(name, (0, (i + self._header_size + self._render_offset) * font_size), color)
 
-        r.rect((0, 0, width, font_size), irenderer.WHITE)
+        r.rect((0, 0, width, font_size), r.background_color())
         if width > font.size(self._path)[0]:
             offset = 0
         else:
             offset = width - font.size(self._path)[0]
-        r.text(self._path, (offset, 0), color=irenderer.BLACK)
+        r.text(self._path, (offset, 0), r.font_color())
 
-        color = irenderer.MODERN_BLUE
-        r.rect((0, font_size, width, font_size), color)
+        frame_thinness = int(self._app.get_configvalue(config.Key.FRAME_THINNESS))
+        r.rect((0, font_size, width, font_size), irenderer.MODERN_BLUE)
+        r.rect((frame_thinness, font_size + frame_thinness, width - frame_thinness*2, font_size - frame_thinness*2),
+               r.background_color())
+
         buf = self._engine.buf
         if self._engine.regex:
             buf = 'Regex: ' + buf
@@ -122,7 +130,7 @@ class DirPanel(IPanel):
             offset = 0
         else:
             offset = width - font.size(buf)[0]
-        r.text(buf, (offset, font_size))
+        r.text(buf, (offset, font_size), r.font_color())
 
     def receive(self, retval):
         return super().receive(retval)
@@ -172,7 +180,7 @@ class DirPanel(IPanel):
     def __init__(self, initial_path: str, app: IApp):
         self._path = initial_path
         self._app = app
-        self._page_updown_speed = int(app.get_configvalue(config.PAGE_UPDOWN_SPEED_KEY))
+        self._page_updown_speed = int(app.get_configvalue(config.Key.PAGE_UPDOWN_SPEED))
         self._render_offset = 0
         self._header_size = 2
         self._engine = SearchEngine()
