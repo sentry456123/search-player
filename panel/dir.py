@@ -6,15 +6,27 @@ from irenderer import IRenderer
 import config
 from searchengine import SearchEngine
 from iapp import IApp
+import subprocess
+import sys
+
+
+def _start_file(filename):
+    if sys.platform == "win32":
+        os.startfile(filename)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filename])
 
 
 class DirPanel(IPanel):
 
     def on_keydown(self, key: int, mod: int, unicode: str):
-        if mod & pygame.KMOD_CTRL:
+
+        ctrl = mod & pygame.KMOD_CTRL
+        shift = mod & pygame.KMOD_SHIFT
+
+        if ctrl:
             match key:
-                case pygame.K_c:
-                    self._engine.buf = ''
                 case pygame.K_h:
                     self._parentdir()
                     self._engine.buf = ''
@@ -29,13 +41,20 @@ class DirPanel(IPanel):
                 case pygame.K_l:
                     self._open_selected()
                 case pygame.K_r:
-                    self._engine.regex = not (mod & pygame.KMOD_SHIFT)
+                    self._engine.regex = not shift
                 case pygame.K_BACKSPACE:
-                    while len(self._engine.buf) <= 0:
-                        self._engine.buf = self._engine.buf[:-1]
-                        if self._engine.buf[-1] == ' ':
-                            break
+                    self._engine.buf = ''
                     self._engine.set_selection(0)
+                case pygame.K_g:
+                    if shift:
+                        self._engine.set_selection(len(self._engine.words) - 1)
+                    else:
+                        self._engine.set_selection(0)
+                case pygame.K_p:
+                    if shift:
+                        self._cancel_pickup(os.path.join(self._path, self._engine.get_selected()))
+                    else:
+                        self._pickup(os.path.join(self._path, self._engine.get_selected()))
         else:
             match key:
                 case pygame.K_RETURN | pygame.K_TAB:
@@ -96,6 +115,7 @@ class DirPanel(IPanel):
         font_size = r.font_size()
         font = r.font()
         theme = self._app.get_configvalue(config.Key.THEME)
+        frame_thinness = int(self._app.get_configvalue(config.Key.FRAME_THINNESS))
 
         self._render_offset = 0
         if self._engine.selection >= (height / font_size) / 2:
@@ -105,6 +125,16 @@ class DirPanel(IPanel):
         r.rect((0, (self._engine.selection + self._header_size + self._render_offset) * font_size, width, font_size), color)
 
         for i, name in enumerate(self._engine.words):
+            if os.path.join(self._path, name) in self._pickups:
+                r.rect((0, (i + self._header_size + self._render_offset) * font_size, width, font_size), irenderer.MODERN_RED)
+                if i == self._engine.selection:
+                    color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
+                else:
+                    color = r.background_color()
+                r.rect((frame_thinness,
+                        (i + self._header_size + self._render_offset) * font_size + frame_thinness,
+                        width - frame_thinness*2,
+                        font_size - frame_thinness*2), color)
             if name[-1] == '/':
                 color = irenderer.MODERN_YELLOW if theme == 'dark' else irenderer.DARK_YELLOW
             else:
@@ -118,7 +148,6 @@ class DirPanel(IPanel):
             offset = width - font.size(self._path)[0]
         r.text(self._path, (offset, 0), r.font_color())
 
-        frame_thinness = int(self._app.get_configvalue(config.Key.FRAME_THINNESS))
         r.rect((0, font_size, width, font_size), irenderer.MODERN_BLUE)
         r.rect((frame_thinness, font_size + frame_thinness, width - frame_thinness*2, font_size - frame_thinness*2),
                r.background_color())
@@ -140,7 +169,7 @@ class DirPanel(IPanel):
             return
         path = self._engine.get_selected()
         if self._is_file(path):
-            os.startfile(os.path.join(self._path, path))
+            _start_file(os.path.join(self._path, path))
         else:
             self._change_dir(path)
             if erase_buf_on_dir:
@@ -170,6 +199,15 @@ class DirPanel(IPanel):
 
         return result
 
+    def _pickup(self, filepath: str):
+        self._pickups.add(filepath)
+
+    def _cancel_pickup(self, filepath: str):
+        try:
+            self._pickups.remove(filepath)
+        except Exception as e:
+            pass
+
     def _is_file(self, path) -> bool:
         abs = os.path.join(self._path, path)
         return os.path.isfile(abs)
@@ -184,3 +222,4 @@ class DirPanel(IPanel):
         self._render_offset = 0
         self._header_size = 2
         self._engine = SearchEngine()
+        self._pickups: set[str] = set()

@@ -1,3 +1,2 @@
 pygame
 numpy
-Send2Trash

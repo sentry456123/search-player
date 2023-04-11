@@ -63,6 +63,8 @@ def _test():
 
     print(cut('Today I bring you to the next level of the world', font, 120))
 
+    pygame.quit()
+
 
 if __name__ == '__main__':
     _test()

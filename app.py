@@ -1,8 +1,6 @@
-import os
 import pygame
 from collections import deque
 from panel.ipanel import IPanel
-import subprocess
 import config
 from config import Config
 from typing import Optional
@@ -150,6 +148,7 @@ class App(IApp):
 
         pygame.init()
         pygame.display.set_caption('Search Player')
+        pygame.display.set_icon(pygame.image.load('icon.png'))
 
         self._panel_stack: deque[str] = deque()
         self.surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)

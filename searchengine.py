@@ -8,11 +8,11 @@ def _search_string(text: str, pattern: str, regex=False) -> bool:
         except Exception as e:
             return False
 
-    text_pos = 0
-    for pattern_char in pattern:
-        if pattern_char not in text[text_pos:]:
+    pos = 0
+    for c in pattern:
+        if c not in text[pos:]:
             return False
-        text_pos = text.index(pattern_char, text_pos) + 1
+        pos = text.index(c, pos) + 1
     return True
 
 

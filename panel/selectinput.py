@@ -1,4 +1,4 @@
-from ipanel import IPanel
+from panel.ipanel import IPanel
 import irenderer
 from irenderer import IRenderer
 from iapp import IApp
