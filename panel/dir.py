@@ -50,11 +50,6 @@ class DirPanel(IPanel):
                         self._engine.set_selection(len(self._engine.words) - 1)
                     else:
                         self._engine.set_selection(0)
-                case pygame.K_p:
-                    if shift:
-                        self._cancel_pickup(os.path.join(self._path, self._engine.get_selected()))
-                    else:
-                        self._pickup(os.path.join(self._path, self._engine.get_selected()))
         else:
             match key:
                 case pygame.K_RETURN | pygame.K_TAB:
@@ -116,25 +111,20 @@ class DirPanel(IPanel):
         font = r.font()
         theme = self._app.get_configvalue(config.Key.THEME)
         frame_thinness = int(self._app.get_configvalue(config.Key.FRAME_THINNESS))
+        mouse_x, mouse_y = pygame.mouse.get_pos()
 
         self._render_offset = 0
         if self._engine.selection >= (height / font_size) / 2:
             self._render_offset = -self._engine.selection + (height / font_size) / 2 - 1
 
-        color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
-        r.rect((0, (self._engine.selection + self._header_size + self._render_offset) * font_size, width, font_size), color)
-
         for i, name in enumerate(self._engine.words):
-            if os.path.join(self._path, name) in self._pickups:
-                r.rect((0, (i + self._header_size + self._render_offset) * font_size, width, font_size), irenderer.MODERN_RED)
-                if i == self._engine.selection:
-                    color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
-                else:
-                    color = r.background_color()
-                r.rect((frame_thinness,
-                        (i + self._header_size + self._render_offset) * font_size + frame_thinness,
-                        width - frame_thinness*2,
-                        font_size - frame_thinness*2), color)
+            if self._engine.selection == i:
+                color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
+            elif int(mouse_y / font_size - self._render_offset - self._header_size) == i:
+                color = (80, 80, 80) if theme == 'dark' else (225, 225, 225)
+            else:
+                color = r.background_color()
+            r.rect((0, (i + self._header_size + self._render_offset) * font_size, width, font_size), color)
             if name[-1] == '/':
                 color = irenderer.MODERN_YELLOW if theme == 'dark' else irenderer.DARK_YELLOW
             else:
@@ -199,15 +189,6 @@ class DirPanel(IPanel):
 
         return result
 
-    def _pickup(self, filepath: str):
-        self._pickups.add(filepath)
-
-    def _cancel_pickup(self, filepath: str):
-        try:
-            self._pickups.remove(filepath)
-        except Exception as e:
-            pass
-
     def _is_file(self, path) -> bool:
         abs = os.path.join(self._path, path)
         return os.path.isfile(abs)
@@ -222,4 +203,3 @@ class DirPanel(IPanel):
         self._render_offset = 0
         self._header_size = 2
         self._engine = SearchEngine()
-        self._pickups: set[str] = set()
