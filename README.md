@@ -29,3 +29,8 @@ The grammar looks like this:
 ```
 
 Copy this and paste into `~/.searchplayerconf`, and edit the values.
+
+Also, you can print available fonts by this command
+```
+python3 -c "import pygame;print(pygame.font.get_fonts())"
+```
