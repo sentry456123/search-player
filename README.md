@@ -3,8 +3,7 @@
 ![Screenshot (279)](https://user-images.githubusercontent.com/92769408/232170267-8942584d-dd68-4e24-9acb-1a843a18d9ba.png)
 ![Screenshot (278)](https://user-images.githubusercontent.com/92769408/232170270-a68a05fa-0b85-49fd-b08a-b04774add538.png)
 ![Screenshot from 2023-04-15 08-52-36](https://user-images.githubusercontent.com/92769408/232171837-5772ca17-9144-48d8-9240-6e8d9397b17f.png)
-
-
+Search Player is a file explorer that opens a file. It includes fast navigation and fast searching files.
 
 # How to use
 1.  Install Python3
