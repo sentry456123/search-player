@@ -9,3 +9,23 @@
 2.  Install PIP3
 3.  Run `pip3 install -r requirements.txt`
 4.  Run `python3 search_player.py`
+
+# Configuration
+To get started, add a file named `~/.searchplayerconf`.
+
+The default configuration looks like this:
+```
+initial_directory /
+initial_fontsize 40
+page_updown_speed 8
+font None
+theme light
+frame_thinness 3
+```
+
+The grammar looks like this:
+```
+[key] [value]
+```
+
+Copy this and paste into `~/.searchplayerconf`, and edit the values.
