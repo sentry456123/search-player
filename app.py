@@ -2,7 +2,6 @@ import pygame
 from collections import deque
 from panel.ipanel import IPanel
 import config
-from config import Config
 from typing import Optional
 import irenderer
 from irenderer import IRenderer
@@ -88,7 +87,6 @@ class App(IApp):
             try:
                 self._get_focused_panel().update()
             except Exception as e:
-                self.close_panel()
                 self.display_error(str(e))
 
             self._renderer.fill(self._renderer.background_color())
@@ -112,15 +110,15 @@ class App(IApp):
         self._running = False
 
     def get_font_size(self):
-        return self._font_size
+        return self._fontsize
 
     def update_font_size(self, font_size: int):
         font_size = np.clip(font_size, 20, 100)
-        self._font_size = font_size
-        self.font = pygame.font.SysFont(self._conf[config.Key.FONT], int(float(self._font_size) * 0.75))
+        self._fontsize = font_size
+        self.font = pygame.font.SysFont(config.get_value(self._conf, config.Key.FONT), int(float(self._fontsize) * 0.75))
 
-    def get_configvalue(self, key: str) -> Config:
-        return self._conf[key]
+    def get_configvalue(self, key: str) -> str:
+        return config.get_value(self._conf, key)
 
     def _on_mousebuttondown(self, x: int, y: int, button: int):
         ctrl = pygame.key.get_mods() & pygame.KMOD_CTRL
@@ -140,11 +138,11 @@ class App(IApp):
 
     def __init__(self):
         err: Optional[str] = None
-        self._conf = Config()
         try:
-            self._conf.load()
+            self._conf = config.load()
         except Exception as e:
             err = f'Failed to load configuration file: {str(e)}'
+            self._conf = {}
 
         pygame.init()
         pygame.display.set_caption('Search Player')
@@ -152,12 +150,12 @@ class App(IApp):
 
         self._panel_stack: deque[str] = deque()
         self.surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
-        self._font_size = int(self._conf[config.Key.INITIAL_FONTSIZE])
-        self.update_font_size(self._font_size)
+        self._fontsize = int(config.get_value(self._conf, config.Key.INITIAL_FONTSIZE))
+        self.update_font_size(self._fontsize)
         self._renderer = AppRenderer(self)
         self._running = True
 
-        self.open_panel(DirPanel(self._conf[config.Key.INITIAL_DIRECTORY], self))
+        self.open_panel(DirPanel(config.get_value(self._conf, config.Key.INITIAL_DIRECTORY), self))
 
         if err is not None:
             self.display_error(err)

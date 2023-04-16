@@ -25,35 +25,38 @@ _DEFAULT_VALUE = {
 }
 
 
-class Config:
+def load(path=PATH) -> dict[Key, str]:
+    result = {}
+    with open(path, 'r') as file:
+        for i, line in enumerate(file):
+            line = line.strip('\n')
+            words = shlex.split(line)
+            length = len(words)
+            if length > 2:
+                raise Exception(
+                    f'At path "{PATH}", line {i} "{line}": '
+                    'Too many words; should be 2')
+            if length == 1:
+                raise Exception(
+                    f'At path "{PATH}", line {i} "{line}": '
+                    'Too few words; should be 2')
+            if length == 0:
+                continue
 
-    def load(self):
-        self._dict.clear()
-        with open(PATH, 'r') as file:
-            for i, line in enumerate(file):
-                line = line.strip('\n')
-                words = shlex.split(line)
-                length = len(words)
-                if length > 2:
-                    raise Exception(
-                        f'At path "{PATH}", line {i} "{line}": '
-                        'Too many words; should be 2')
-                if length == 1:
-                    raise Exception(
-                        f'At path "{PATH}", line {i} "{line}": '
-                        'Too few words; should be 2')
-                if length == 0:
-                    continue
-                if not words[0] in [e.value for e in Key]:
-                    raise Exception(
-                        f'At path "{PATH}", line {i} "{line}": '
-                        f'No key called "{words[0]}" found')
-                self._dict[words[0]] = words[1]
+            found = False
+            for key in Key:
+                if key.value == words[0]:
+                    result[key] = words[1]
+                    found = True
+                    break
 
-    def __init__(self):
-        self._dict: dict[str, str] = dict()
+            if not found:
+                raise Exception(
+                    f'At path "{PATH}", line {i} "{line}": '
+                    f'No key called "{words[0]}" found')
 
-    def __getitem__(self, key: Key) -> str:
-        if key.value in self._dict:
-            return self._dict[key.value]
-        return _DEFAULT_VALUE[key]
+    return result
+
+
+def get_value(conf: dict[Key, str], key: Key) -> str:
+    return conf[key] if key in conf else _DEFAULT_VALUE[key]
