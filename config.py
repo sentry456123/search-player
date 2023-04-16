@@ -32,6 +32,7 @@ def load(path=PATH) -> dict[Key, str]:
             line = line.strip('\n')
             words = shlex.split(line)
             length = len(words)
+
             if length > 2:
                 raise Exception(
                     f'At path "{PATH}", line {i} "{line}": '
@@ -49,7 +50,6 @@ def load(path=PATH) -> dict[Key, str]:
                     result[key] = words[1]
                     found = True
                     break
-
             if not found:
                 raise Exception(
                     f'At path "{PATH}", line {i} "{line}": '

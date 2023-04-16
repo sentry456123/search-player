@@ -4,11 +4,11 @@ from panel.ipanel import IPanel
 import irenderer
 from irenderer import IRenderer
 import config
-from searchengine import SearchEngine
 from iapp import IApp
 import subprocess
 import sys
 from enum import Enum
+import re
 
 
 def _start_file(filename):
@@ -40,6 +40,21 @@ def _list_dir(path: str) -> list[str]:
     return result
 
 
+def _search_string(text: str, pattern: str, regex=False) -> bool:
+    if regex:
+        try:
+            return re.search(pattern, text) is not None
+        except Exception:
+            return False
+
+    pos = 0
+    for c in pattern:
+        if c not in text[pos:]:
+            return False
+        pos = text.index(c, pos) + 1
+    return True
+
+
 class Result(Enum):
     IS_FILE = 0
     IS_DIR = 1
@@ -56,7 +71,7 @@ class DirPanel(IPanel):
             match key:
                 case pygame.K_h:
                     self._parentdir()
-                    self._engine.buf = ''
+                    self._buf = ''
                 case pygame.K_j:
                     self.selection += 1
                 case pygame.K_k:
@@ -68,12 +83,12 @@ class DirPanel(IPanel):
                 case pygame.K_l:
                     self._open_selected()
                 case pygame.K_r:
-                    self._engine.regex = not shift
+                    self._regex = not shift
                 case pygame.K_BACKSPACE:
-                    self._engine.buf = ''
+                    self._buf = ''
                 case pygame.K_g:
                     if shift:
-                        self.selection = len(self._engine.get_result()) - 1
+                        self.selection = len(self._files()) - 1
                     else:
                         self.selection = 0
         else:
@@ -81,7 +96,7 @@ class DirPanel(IPanel):
                 case pygame.K_RETURN | pygame.K_TAB:
                     result = self._open_selected()
                     if result == Result.IS_DIR:
-                        self._engine.buf = ''
+                        self._buf = ''
                 case pygame.K_RIGHT:
                     self._open_selected()
                 case pygame.K_UP:
@@ -90,7 +105,7 @@ class DirPanel(IPanel):
                     self.selection += 1
                 case pygame.K_LEFT:
                     self._parentdir()
-                    self._engine.buf = ''
+                    self._buf = ''
                 case pygame.K_PAGEUP:
                     self.selection -= self._page_updown_speed
                 case pygame.K_PAGEDOWN:
@@ -98,13 +113,13 @@ class DirPanel(IPanel):
                 case pygame.K_HOME:
                     self.selection = 0
                 case pygame.K_END:
-                    self.selection = len(self._engine.get_result()) - 1
+                    self.selection = len(self._files()) - 1
                 case pygame.K_BACKSPACE:
-                    self._engine.buf = self._engine.buf[:-1]
+                    self._buf = self._buf[:-1]
                     self.selection = 0
                 case _:
                     if len(unicode) != 0 and unicode in irenderer.TYPABLE:
-                        self._engine.buf += unicode
+                        self._buf += unicode
                         self.selection = 0
 
     def on_mousebuttondown(self, x: int, y: int, button: int):
@@ -122,10 +137,10 @@ class DirPanel(IPanel):
                 if not ctrl:
                     self.selection -= 1
             case pygame.BUTTON_MIDDLE:
-                self._engine.buf = ''
+                self._buf = ''
             case pygame.BUTTON_X1:
                 self._parentdir()
-                self._engine.buf = ''
+                self._buf = ''
             case pygame.BUTTON_X2:
                 self._open_selected()
 
@@ -144,7 +159,7 @@ class DirPanel(IPanel):
         if self.selection >= (height / font_size) / 2:
             self._render_offset = -self.selection + (height / font_size) / 2 - 1
 
-        for i, name in enumerate(self._engine.get_result()):
+        for i, name in enumerate(self._files()):
             if self.selection == i:
                 color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
             elif int(mouse_y / font_size - self._render_offset - self._header_size) == i:
@@ -169,8 +184,8 @@ class DirPanel(IPanel):
         r.rect((frame_thinness, font_size + frame_thinness, width - frame_thinness*2, font_size - frame_thinness*2),
                r.background_color())
 
-        buf = self._engine.buf
-        if self._engine.regex:
+        buf = self._buf
+        if self._regex:
             buf = 'Regex: ' + buf
         if width > font.size(buf)[0]:
             offset = 0
@@ -187,8 +202,7 @@ class DirPanel(IPanel):
 
     @selection.setter
     def selection(self, value: int):
-        names = self._engine.get_result()
-        length = len(names)
+        length = len(self._files())
 
         self._selection = value
         if self._selection >= length:
@@ -198,10 +212,10 @@ class DirPanel(IPanel):
 
     def _open_selected(self) -> Result:
         result: Result
-        names = self._engine.get_result()
-        if len(names) <= 0:
+        files = self._files()
+        if len(files) <= 0:
             return
-        path = names[self.selection]
+        path = files[self.selection]
         if _is_file(self._path, path):
             _start_file(os.path.join(self._path, path))
             result = Result.IS_FILE
@@ -217,16 +231,24 @@ class DirPanel(IPanel):
         abs_dist = os.path.abspath(self._path)
         new_path = os.path.join(abs_dist, path)
         self._path = os.path.abspath(new_path)
-        self._engine.source = _list_dir(self._path)
         self.selection = 0
+
+    def _files(self) -> list[str]:
+        result = []
+        for name in _list_dir(self._path):
+            if _search_string(name.lower(), self._buf.lower(), regex=self._regex):
+                result.append(name)
+        return result
+
+    @property
+    def _page_updown_speed(self) -> int:
+        return int(self._app.get_configvalue(config.Key.PAGE_UPDOWN_SPEED))
 
     def __init__(self, initial_path: str, app: IApp):
         self._path = initial_path
         self._app = app
-        self._page_updown_speed = int(app.get_configvalue(config.Key.PAGE_UPDOWN_SPEED))
         self._render_offset = 0
         self._header_size = 2
-        self._engine = SearchEngine()
         self._selection = 0
-
-        self._engine.source = _list_dir(self._path)
+        self._buf = ''
+        self._regex = False
