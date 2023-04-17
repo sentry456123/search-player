@@ -155,11 +155,16 @@ class DirPanel(IPanel):
         frame_thinness = int(self._app.get_configvalue(config.Key.FRAME_THINNESS))
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
+        try:
+            files = self._files()
+        except Exception:
+            files = ['./', '../']
+
         self._render_offset = 0
         if self.selection >= (height / font_size) / 2:
             self._render_offset = -self.selection + (height / font_size) / 2 - 1
 
-        for i, name in enumerate(self._files()):
+        for i, name in enumerate(files):
             if self.selection == i:
                 color = (120, 120, 120) if theme == 'dark' else (200, 200, 200)
             elif int(mouse_y / font_size - self._render_offset - self._header_size) == i:
@@ -234,13 +239,8 @@ class DirPanel(IPanel):
         self.selection = 0
 
     def _files(self) -> list[str]:
-        try:
-            listed = _list_dir(self._path)
-        except Exception:
-            return ['./', '../']
-
         result = []
-        for name in listed:
+        for name in _list_dir(self._path):
             if _search_string(name.lower(), self._buf.lower(), regex=self._regex):
                 result.append(name)
         return result
