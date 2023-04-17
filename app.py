@@ -42,8 +42,7 @@ class AppRenderer(IRenderer):
         return self._app.get_font_size()
 
     def panel_size(self) -> tuple[int, int]:
-        x, y = self._app.surface.get_size()
-        return (x - 10, y - 10)
+        return self._app.surface.get_size()
 
     def font_color(self) -> tuple[int, int, int]:
         theme = self._app.get_configvalue(config.Key.THEME)
