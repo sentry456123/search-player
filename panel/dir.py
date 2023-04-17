@@ -234,8 +234,13 @@ class DirPanel(IPanel):
         self.selection = 0
 
     def _files(self) -> list[str]:
+        try:
+            listed = _list_dir(self._path)
+        except Exception:
+            return ['./', '../']
+
         result = []
-        for name in _list_dir(self._path):
+        for name in listed:
             if _search_string(name.lower(), self._buf.lower(), regex=self._regex):
                 result.append(name)
         return result
