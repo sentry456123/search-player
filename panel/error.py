@@ -13,7 +13,7 @@ class ErrorPanel(IPanel):
         self._app.close_panel()
 
     def update(self):
-        pass
+        super().update()
 
     def render(self, r: IRenderer):
         r.fill(r.background_color())

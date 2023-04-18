@@ -63,7 +63,6 @@ class Result(Enum):
 class DirPanel(IPanel):
 
     def on_keydown(self, key: int, mod: int, unicode: str):
-
         ctrl = mod & pygame.KMOD_CTRL
         shift = mod & pygame.KMOD_SHIFT
 
@@ -145,7 +144,7 @@ class DirPanel(IPanel):
                 self._open_selected()
 
     def update(self):
-        pass
+        super().update()
 
     def render(self, r: IRenderer):
         width, height = r.panel_size()
