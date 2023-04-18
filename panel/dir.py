@@ -189,13 +189,17 @@ class DirPanel(IPanel):
                r.background_color())
 
         buf = self._buf
+        cursor_width = r.font_size() * 0.3
         if self._regex:
             buf = 'Regex: ' + buf
-        if width > font.size(buf)[0]:
+        if width + cursor_width > font.size(buf)[0]:
             offset = 0
         else:
-            offset = width - font.size(buf)[0]
+            offset = width - font.size(buf)[0] - cursor_width
         r.text(buf, (offset, font_size), r.font_color())
+
+        buflen = font.size(buf)[0]
+        r.rect((offset + buflen, font_size, cursor_width, font_size), r.font_color())
 
     def receive(self, retval):
         return super().receive(retval)
