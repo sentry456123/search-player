@@ -40,7 +40,7 @@ def _list_dir(path: str) -> list[str]:
     return result
 
 
-def _search_string(text: str, pattern: str, regex=False) -> bool:
+def _search(text: str, pattern: str, regex=False) -> bool:
     if regex:
         try:
             return re.search(pattern, text) is not None
@@ -244,7 +244,7 @@ class DirPanel(IPanel):
     def _files(self) -> list[str]:
         result = []
         for name in _list_dir(self._path):
-            if _search_string(name.lower(), self._buf.lower(), regex=self._regex):
+            if _search(name.lower(), self._buf.lower(), regex=self._regex):
                 result.append(name)
         return result
 
