@@ -68,6 +68,10 @@ class DirPanel(IPanel):
 
         if ctrl:
             match key:
+                case pygame.K_RETURN:
+                    result = self._open_selected()
+                    if result == Result.IS_DIR:
+                        self._buf = ''
                 case pygame.K_h:
                     self._parentdir()
                     self._buf = ''
