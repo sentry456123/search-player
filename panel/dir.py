@@ -11,7 +11,7 @@ from enum import Enum
 import re
 
 
-def _start_file(filename):
+def _start_file(filename: str):
     if sys.platform == 'win32':
         os.startfile(filename)
     else:
@@ -19,12 +19,12 @@ def _start_file(filename):
         subprocess.call([opener, filename])
 
 
-def _is_file(dirpath, name) -> bool:
+def _is_file(dirpath: str, name: str) -> bool:
     abs = os.path.join(dirpath, name)
     return os.path.isfile(abs)
 
 
-def _is_dir(dirpath, name) -> bool:
+def _is_dir(dirpath: str, name: str) -> bool:
     return not _is_file(dirpath, name)
 
 
