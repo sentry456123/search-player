@@ -148,7 +148,7 @@ class App(IApp):
         pygame.display.set_caption('Search Player')
         pygame.display.set_icon(pygame.image.load('icon.png'))
 
-        self._panel_stack = deque[str]()
+        self._panel_stack = deque[IPanel]()
         self.surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
         self._fontsize = int(config.get_value(self._conf, config.Key.INITIAL_FONTSIZE))
         self.update_font_size(self._fontsize)
