@@ -80,9 +80,9 @@ class DirPanel(IPanel):
                 case pygame.K_k:
                     self.selection -= 1
                 case pygame.K_d:
-                    self.selection += self._page_updown_speed
+                    self.selection += config.page_updown_speed
                 case pygame.K_u:
-                    self.selection -= self._page_updown_speed
+                    self.selection -= config.page_updown_speed
                 case pygame.K_l:
                     self._open_selected()
                 case pygame.K_r:
@@ -110,9 +110,9 @@ class DirPanel(IPanel):
                     self._parentdir()
                     self._buf = ''
                 case pygame.K_PAGEUP:
-                    self.selection -= self._page_updown_speed
+                    self.selection -= config.page_updown_speed
                 case pygame.K_PAGEDOWN:
-                    self.selection += self._page_updown_speed
+                    self.selection += config.page_updown_speed
                 case pygame.K_HOME:
                     self.selection = 0
                 case pygame.K_END:
@@ -154,8 +154,8 @@ class DirPanel(IPanel):
         width, height = r.panel_size()
         font_size = r.font_size()
         font = r.font()
-        theme = self._app.get_configvalue(config.Key.THEME)
-        frame_thinness = int(self._app.get_configvalue(config.Key.FRAME_THINNESS))
+        theme = config.theme
+        frame_thinness = int(config.frame_thinness)
         mouse_x, mouse_y = pygame.mouse.get_pos()
 
         try:
@@ -251,10 +251,6 @@ class DirPanel(IPanel):
             if _search(name.lower(), self._buf.lower(), regex=self._regex):
                 result.append(name)
         return result
-
-    @property
-    def _page_updown_speed(self) -> int:
-        return int(self._app.get_configvalue(config.Key.PAGE_UPDOWN_SPEED))
 
     def __init__(self, initial_path: str, app: IApp):
         self._path = initial_path

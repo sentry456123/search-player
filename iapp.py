@@ -18,6 +18,3 @@ class IApp(ABC):
 
     @abstractmethod
     def update_font_size(self, font_size: int): ...
-
-    @abstractmethod
-    def get_configvalue(self, key: str) -> str: ...

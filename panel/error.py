@@ -16,9 +16,9 @@ class ErrorPanel(IPanel):
             case pygame.K_k:
                 self.offset += font_size
             case pygame.K_d:
-                self.offset -= int(self._app.get_configvalue(config.Key.PAGE_UPDOWN_SPEED)) * font_size
+                self.offset -= config.page_updown_speed * font_size
             case pygame.K_u:
-                self.offset += int(self._app.get_configvalue(config.Key.PAGE_UPDOWN_SPEED)) * font_size
+                self.offset += config.page_updown_speed * font_size
             case pygame.K_ESCAPE:
                 self._app.close_panel()
 

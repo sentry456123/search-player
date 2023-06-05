@@ -45,13 +45,13 @@ class AppRenderer(IRenderer):
         return self._app.surface.get_size()
 
     def font_color(self) -> tuple[int, int, int]:
-        theme = self._app.get_configvalue(config.Key.THEME)
+        theme = config.theme
         if theme == 'dark':
             return irenderer.WHITE
         return irenderer.BLACK
 
     def background_color(self) -> tuple[int, int, int]:
-        theme = self._app.get_configvalue(config.Key.THEME)
+        theme = config.theme
         if theme == 'dark':
             return irenderer.GRAY
         return irenderer.WHITE
@@ -115,10 +115,7 @@ class App(IApp):
     def update_font_size(self, font_size: int):
         font_size = np.clip(font_size, 20, 100)
         self._fontsize = font_size
-        self.font = pygame.font.SysFont(config.get_value(self._conf, config.Key.FONT), int(float(self._fontsize) * 0.75))
-
-    def get_configvalue(self, key: str) -> str:
-        return config.get_value(self._conf, key)
+        self.font = pygame.font.SysFont(config.font, int(float(self._fontsize) * 0.75))
 
     def _on_mousebuttondown(self, x: int, y: int, button: int):
         ctrl = pygame.key.get_mods() & pygame.KMOD_CTRL
@@ -137,28 +134,21 @@ class App(IApp):
         return self._panel_stack[-1]
 
     def __init__(self):
-        err: Optional[str] = None
-        try:
-            self._conf = config.load()
-        except Exception as e:
-            err = f'Failed to load configuration file: {str(e)}'
-            self._conf = {}
-
         pygame.init()
         pygame.display.set_caption('Search Player')
         pygame.display.set_icon(pygame.image.load('icon.png'))
 
         self._panel_stack = deque[IPanel]()
         self.surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
-        self._fontsize = int(config.get_value(self._conf, config.Key.INITIAL_FONTSIZE))
+        self._fontsize = config.initial_fontsize
         self.update_font_size(self._fontsize)
         self._renderer = AppRenderer(self)
         self._running = True
 
-        self.open_panel(DirPanel(config.get_value(self._conf, config.Key.INITIAL_DIRECTORY), self))
+        self.open_panel(DirPanel(config.initial_directory, self))
 
-        if err is not None:
-            self.display_error(err)
+        if config.err is not None:
+            self.display_error(config.err)
 
     def __del__(self):
         pygame.quit()
