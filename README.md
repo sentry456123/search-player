@@ -12,24 +12,22 @@ Search Player is a file explorer that opens a file. It includes fast navigation 
 4.  Run `python3 search_player.py`
 
 # Configuration
-To get started, add a file named `~/.searchplayerconf`.
+To get started, add a file named `~/.searchplayerconf.ini`.
 
 The default configuration looks like this:
 ```
-initial_directory /
-initial_fontsize 40
-page_updown_speed 8
-font None
-theme light
-frame_thinness 3
+[fs]
+initial_directory = /
+[visual]
+initial_fontsize = 40
+font = None
+theme = light
+frame_thinness = 3
+[key]
+page_updown_speed = 8
 ```
 
-The grammar looks like this:
-```
-[key] [value]
-```
-
-Copy this and paste into `~/.searchplayerconf`, and edit the values.
+Copy this and paste into `~/.searchplayerconf.ini`, and edit the values.
 
 Also, you can print available fonts by this command
 ```
