@@ -1,7 +1,6 @@
 import os
 from configparser import ConfigParser
 from typing import Optional
-import sys
 
 
 PATH = os.path.expanduser('~/.searchplayerconf.ini')

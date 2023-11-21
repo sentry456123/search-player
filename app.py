@@ -2,7 +2,6 @@ import pygame
 from collections import deque
 from panel.ipanel import IPanel
 import config
-from typing import Optional
 import irenderer
 from irenderer import IRenderer
 from panel.dir import DirPanel

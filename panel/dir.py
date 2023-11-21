@@ -10,6 +10,17 @@ import sys
 from enum import Enum
 import re
 
+is_vlc_installed = True
+
+try:
+    import vlc
+    vlc_player = vlc.MediaPlayer()
+except ImportError as e:
+    is_vlc_installed = False
+    print(e.msg, file=sys.stderr)
+except ImportWarning as e:
+    print(e.msg, file=sys.stderr)
+
 
 def _start_file(filename: str):
     if sys.platform == 'win32':
@@ -94,6 +105,18 @@ class DirPanel(IPanel):
                         self.selection = len(self._files()) - 1
                     else:
                         self.selection = 0
+                case pygame.K_p:
+                    if not is_vlc_installed:
+                        return
+                    if shift:
+                        vlc_player.pause()
+                        return
+                    files = self._files()
+                    if len(files) <= 0:
+                        return
+                    path = files[self.selection]
+                    vlc_player.set_mrl(os.path.join(self._path, path))
+                    vlc_player.play()
         else:
             match key:
                 case pygame.K_RETURN | pygame.K_TAB:
