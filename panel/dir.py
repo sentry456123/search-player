@@ -27,7 +27,7 @@ def _start_file(filename: str):
         os.startfile(filename)
     else:
         opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-        subprocess.call([opener, filename])
+        subprocess.run([opener, filename])
 
 
 def _is_file(dirpath: str, name: str) -> bool:
@@ -80,9 +80,12 @@ class DirPanel(IPanel):
         if ctrl:
             match key:
                 case pygame.K_RETURN:
-                    result = self._open_selected()
-                    if result == Result.IS_DIR:
-                        self._buf = ''
+                    if shift:
+                        self._reveal_selected()
+                    else:
+                        result = self._open_selected()
+                        if result == Result.IS_DIR:
+                            self._buf = ''
                 case pygame.K_h:
                     self._parentdir()
                     self._buf = ''
@@ -95,7 +98,10 @@ class DirPanel(IPanel):
                 case pygame.K_u:
                     self.selection -= config.page_updown_speed
                 case pygame.K_l:
-                    self._open_selected()
+                    if shift:
+                        self._reveal_selected()
+                    else:
+                        self._open_selected()
                 case pygame.K_r:
                     self._regex = not shift
                 case pygame.K_BACKSPACE:
@@ -115,16 +121,22 @@ class DirPanel(IPanel):
                     if len(files) <= 0:
                         return
                     path = files[self.selection]
-                    vlc_player.set_mrl(os.path.join(self._path, path))
+                    vlc_player.set_mrl(os.path.join(self._path, path), ":no-video")
                     vlc_player.play()
         else:
             match key:
                 case pygame.K_RETURN | pygame.K_TAB:
-                    result = self._open_selected()
-                    if result == Result.IS_DIR:
-                        self._buf = ''
+                    if shift:
+                        self._reveal_selected()
+                    else:
+                        result = self._open_selected()
+                        if result == Result.IS_DIR:
+                            self._buf = ''
                 case pygame.K_RIGHT:
-                    self._open_selected()
+                    if shift:
+                        self._reveal_selected()
+                    else:
+                        self._open_selected()
                 case pygame.K_UP:
                     self.selection += -1
                 case pygame.K_DOWN:
@@ -258,6 +270,16 @@ class DirPanel(IPanel):
             self._change_dir(path)
             result = Result.IS_DIR
         return result
+    
+    def _reveal_selected(self):
+        files = self._files()
+        if len(files) <= 0:
+            return
+        if sys.platform != 'win32':
+            raise Exception('"Reveal in file explorer" command only available in Windows')
+        path = files[self.selection]
+        subprocess.run('explorer /select,{}'.format(os.path.join(self._path, path)).replace('/', '\\'))
+
 
     def _parentdir(self):
         self._change_dir('../')
