@@ -123,6 +123,8 @@ class DirPanel(IPanel):
                     path = files[self.selection]
                     vlc_player.set_mrl(os.path.join(self._path, path), ":no-video")
                     vlc_player.play()
+                case pygame.K_w:
+                    self._app.quit()                    
         else:
             match key:
                 case pygame.K_RETURN | pygame.K_TAB:
