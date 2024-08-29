@@ -9,7 +9,7 @@ Search Player is a file explorer that opens a file. It includes fast navigation 
 1.  Install Python3
 2.  Install PIP3
 3.  Run `pip3 install -r requirements.txt`
-4.  Run `python3 search_player.py`
+4.  Run `python3 main.py`
 
 # Configuration
 To get started, add a file named `~/.searchplayerconf.ini`.
